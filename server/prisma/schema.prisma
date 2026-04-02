@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  wallet    Wallet?
+  tasks     Task[]
+
+  @@index([createdAt])
+}
+
+model Wallet {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  publicKey            String   @unique
+  encryptedPrivateKey  String
+
+  createdAt            DateTime @default(now())
+
+  user  User     @relation(fields: [userId], references: [id])
+  tasks Task[]
+
+  @@index([publicKey])
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  userId          String
+  walletId        String
+
+  // Payment details
+  amount          Float
+  token           String   // "SOL" / "USDC"
+  receiverAddress String
+
+  // Automation
+  frequency       String   // "daily" | "weekly"
+  lastExecutedAt  DateTime?
+  nextExecutionAt DateTime
+
+  // Safety constraints
+  maxAmountLimit  Float
+  expiryAt        DateTime?
+
+  // Status
+  status          String   @default("active") // active | paused
+
+  createdAt       DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  wallet  Wallet  @relation(fields: [walletId], references: [id])
+  txs     Transaction[]
+
+  @@index([userId])
+  @@index([walletId])
+  @@index([nextExecutionAt])
+  @@index([status])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  taskId      String
+
+  amount      Float
+  txHash      String?
+  status      String   // pending | success | failed
+  error       String?
+
+  executedAt  DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id])
+
+  @@index([taskId])
+  @@index([status])
+}

@@ -1,0 +1,108 @@
+import { z } from "zod";
+import { env } from "../config/env";
+
+const parsedTaskSchema = z.object({
+  amount: z.number().positive(),
+  token: z.string().trim().min(1).transform((v) => v.toUpperCase()),
+  receiverAddress: z.string().trim().min(32).max(44),
+  frequency: z.enum(["daily", "weekly"]),
+});
+
+export type ParsedTask = z.infer<typeof parsedTaskSchema>;
+
+function normalizeFrequency(value: string): "daily" | "weekly" {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "daily" || normalized === "weekly") {
+    return normalized;
+  }
+
+  throw new Error("Unsupported frequency. Use daily or weekly.");
+}
+
+function tryRegexParser(prompt: string): ParsedTask | null {
+  const match = prompt.match(/pay\s+([0-9]*\.?[0-9]+)\s+([a-zA-Z]+)\s+(daily|weekly)\s+to\s+([1-9A-HJ-NP-Za-km-z]{32,44})/i);
+  if (!match || !match[1] || !match[2] || !match[3] || !match[4]) {
+    return null;
+  }
+
+  const parsed = {
+    amount: Number(match[1]),
+    token: match[2],
+    frequency: normalizeFrequency(match[3]),
+    receiverAddress: match[4],
+  };
+
+  const result = parsedTaskSchema.safeParse(parsed);
+  return result.success ? result.data : null;
+}
+
+function extractFirstJsonObject(text: string): string {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error("AI response did not contain JSON");
+  }
+
+  return text.slice(start, end + 1);
+}
+
+async function tryOpenAIParser(prompt: string): Promise<ParsedTask | null> {
+  if (!env.OPENAI_API_KEY) {
+    return null;
+  }
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: env.OPENAI_MODEL,
+      temperature: 0,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Extract autopay task details from text. Return strict JSON only with keys: amount(number), token(string), receiverAddress(string), frequency('daily'|'weekly').",
+        },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string | null } }>;
+  };
+
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) {
+    return null;
+  }
+
+  const parsedRaw = JSON.parse(extractFirstJsonObject(text));
+  const parsed = parsedTaskSchema.safeParse({
+    ...parsedRaw,
+    frequency: typeof parsedRaw.frequency === "string" ? normalizeFrequency(parsedRaw.frequency) : parsedRaw.frequency,
+  });
+
+  return parsed.success ? parsed.data : null;
+}
+
+export async function parseNaturalLanguageTask(prompt: string): Promise<ParsedTask> {
+  const fromAi = await tryOpenAIParser(prompt);
+  if (fromAi) {
+    return fromAi;
+  }
+
+  const fromRegex = tryRegexParser(prompt);
+  if (fromRegex) {
+    return fromRegex;
+  }
+
+  throw new Error("Could not parse task input. Example: Pay 0.2 SOL weekly to <wallet>");
+}

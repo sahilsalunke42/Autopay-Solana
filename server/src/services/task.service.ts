@@ -1,6 +1,6 @@
-import { prisma } from "../../config/db";
-import { executeSolPayment } from "../../services/solana.service";
-import { logger } from "../../utils/logger";
+import { prisma } from "../config/db";
+import { executeSolPayment } from "./solana.service";
+import { logger } from "../utils/logger";
 
 const ACTIVE_TASK_STATUS = "ACTIVE" as never;
 const SUCCESS_TX_STATUS = "SUCCESS" as never;

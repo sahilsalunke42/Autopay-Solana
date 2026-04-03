@@ -1,16 +1,13 @@
-import { Router } from "express";
+import type { Request, Response } from "express";
 import { z } from "zod";
-import { authMiddleware } from "../../middleware/auth.middleware";
-import { prisma } from "../../config/db";
-import { encrypt } from "../../services/encryption.service";
-
-const router = Router();
+import { prisma } from "../config/db";
+import { encrypt } from "../services/encryption.service";
 
 const updatePrivateKeySchema = z.object({
   privateKey: z.string().min(20),
 });
 
-router.get("/me", authMiddleware, async (req, res) => {
+export async function getWalletMeHandler(req: Request, res: Response) {
   try {
     const authUser = req.authUser;
     if (!authUser) {
@@ -35,9 +32,9 @@ router.get("/me", authMiddleware, async (req, res) => {
   } catch {
     return res.status(500).json({ error: "Failed to fetch wallet" });
   }
-});
+}
 
-router.post("/private-key", authMiddleware, async (req, res) => {
+export async function updatePrivateKeyHandler(req: Request, res: Response) {
   try {
     const authUser = req.authUser;
     if (!authUser) {
@@ -58,6 +55,4 @@ router.post("/private-key", authMiddleware, async (req, res) => {
   } catch {
     return res.status(500).json({ error: "Failed to update private key" });
   }
-});
-
-export { router as walletRouter };
+}

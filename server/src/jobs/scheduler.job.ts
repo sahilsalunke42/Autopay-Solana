@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { prisma } from "../config/db";
-import { executeTask } from "../modules/task/task.service";
+import { executeTask } from "../services/task.service";
 import { logger } from "../utils/logger";
 
 let schedulerStarted = false;

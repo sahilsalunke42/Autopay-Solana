@@ -1,11 +1,8 @@
-import { Router } from "express";
-import { authMiddleware } from "../../middleware/auth.middleware";
-import { prisma } from "../../config/db";
-import { logger } from "../../utils/logger";
+import type { Request, Response } from "express";
+import { prisma } from "../config/db";
+import { logger } from "../utils/logger";
 
-const router = Router();
-
-router.get("/", authMiddleware, async (req, res) => {
+export async function getTransactionsHandler(req: Request, res: Response) {
   try {
     const authUser = req.authUser;
     if (!authUser) {
@@ -28,6 +25,4 @@ router.get("/", authMiddleware, async (req, res) => {
     });
     return res.status(500).json({ error: "Failed to fetch transactions" });
   }
-});
-
-export { router as transactionRouter };
+}

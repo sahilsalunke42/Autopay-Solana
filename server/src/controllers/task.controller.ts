@@ -1,13 +1,10 @@
-import { Router } from "express";
+import type { Request, Response } from "express";
 import { PublicKey } from "@solana/web3.js";
 import { z } from "zod";
-import { authMiddleware } from "../../middleware/auth.middleware";
-import { prisma } from "../../config/db";
-import { parseNaturalLanguageTask } from "../../services/ai.service";
-import { ACTIVE_TASK_STATUS, computeNextExecutionAt, executeTask } from "./task.service";
-import { logger } from "../../utils/logger";
-
-const router = Router();
+import { prisma } from "../config/db";
+import { parseNaturalLanguageTask } from "../services/ai.service";
+import { ACTIVE_TASK_STATUS, computeNextExecutionAt, executeTask } from "../services/task.service";
+import { logger } from "../utils/logger";
 
 const createTaskSchema = z.object({
   prompt: z.string().min(5),
@@ -15,7 +12,7 @@ const createTaskSchema = z.object({
   expiryAt: z.string().datetime().optional(),
 });
 
-router.post("/create", authMiddleware, async (req, res) => {
+export async function createTaskHandler(req: Request, res: Response) {
   try {
     const authUser = req.authUser;
     if (!authUser) {
@@ -59,9 +56,9 @@ router.post("/create", authMiddleware, async (req, res) => {
     logger.error("Create task failed", { error: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Failed to create task" });
   }
-});
+}
 
-router.get("/", authMiddleware, async (req, res) => {
+export async function getTasksHandler(req: Request, res: Response) {
   try {
     const authUser = req.authUser;
     if (!authUser) {
@@ -78,9 +75,9 @@ router.get("/", authMiddleware, async (req, res) => {
     logger.error("Fetch tasks failed", { error: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Failed to fetch tasks" });
   }
-});
+}
 
-router.post("/execute/:id", authMiddleware, async (req, res) => {
+export async function executeTaskHandler(req: Request, res: Response) {
   try {
     const authUser = req.authUser;
     if (!authUser) {
@@ -110,6 +107,4 @@ router.post("/execute/:id", authMiddleware, async (req, res) => {
     logger.error("Manual task execution failed", { error: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Failed to execute task" });
   }
-});
-
-export { router as taskRouter };
+}

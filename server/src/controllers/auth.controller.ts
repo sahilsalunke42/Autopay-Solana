@@ -1,15 +1,13 @@
-import { Router } from "express";
 import jwt from "jsonwebtoken";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 import { PublicKey } from "@solana/web3.js";
 import { z } from "zod";
-import { prisma } from "../../config/db";
-import { env } from "../../config/env";
-import { encrypt } from "../../services/encryption.service";
-import { logger } from "../../utils/logger";
-
-const router = Router();
+import type { Request, Response } from "express";
+import { prisma } from "../config/db";
+import { env } from "../config/env";
+import { encrypt } from "../services/encryption.service";
+import { logger } from "../utils/logger";
 
 const loginSchema = z.object({
   publicKey: z.string().min(32).max(44),
@@ -26,7 +24,7 @@ function decodeSignature(rawSignature: string): Uint8Array {
   }
 }
 
-router.post("/login", async (req, res) => {
+export async function loginHandler(req: Request, res: Response) {
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -105,6 +103,4 @@ router.post("/login", async (req, res) => {
     logger.error("Auth login failed", { error: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Authentication failed" });
   }
-});
-
-export { router as authRouter };
+}

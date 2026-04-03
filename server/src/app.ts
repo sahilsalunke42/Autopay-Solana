@@ -24,7 +24,6 @@ function loadSwaggerDocument() {
 
 export function createApp() {
   const app = express();
-  const swaggerDocument = loadSwaggerDocument();
 
   app.use(cors());
   app.use(express.json({ limit: "1mb" }));
@@ -34,6 +33,7 @@ export function createApp() {
   });
 
   app.get("/docs-json", (_req, res) => {
+    const swaggerDocument = loadSwaggerDocument();
     if (!swaggerDocument) {
       return res.status(404).json({
         error: "Swagger output not found. Run `bun run swagger:generate` first.",
@@ -43,7 +43,15 @@ export function createApp() {
     return res.json(swaggerDocument);
   });
 
-  app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument ?? { openapi: "3.0.0", paths: {} }));
+  app.use(
+    "/docs",
+    swaggerUi.serve,
+    swaggerUi.setup(undefined, {
+      swaggerOptions: {
+        url: "/docs-json",
+      },
+    }),
+  );
 
   app.use("/auth", authRouter);
   app.use("/wallet", walletRouter);

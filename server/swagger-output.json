@@ -65,6 +65,20 @@
           "500": {
             "description": "Internal Server Error"
           }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Authenticate wallet (signup/login merged)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
         }
       }
     },
@@ -93,7 +107,16 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "Get authenticated wallet profile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/wallet/private-key": {
@@ -120,6 +143,25 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "Update encrypted wallet private key",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePrivateKeyRequest"
+              }
+            }
           }
         }
       }
@@ -149,6 +191,25 @@
           "500": {
             "description": "Internal Server Error"
           }
+        },
+        "tags": [
+          "Task"
+        ],
+        "summary": "Create autopay task from natural language",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          }
         }
       }
     },
@@ -174,7 +235,16 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Task"
+        ],
+        "summary": "Get all tasks for authenticated user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/task/execute/{id}": {
@@ -210,7 +280,16 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Task"
+        ],
+        "summary": "Manually execute a task",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/transaction/": {
@@ -234,6 +313,206 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Get transaction logs for authenticated user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "object"
+          },
+          "required": {
+            "type": "array",
+            "example": [
+              "publicKey",
+              "message",
+              "signature"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "publicKey": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "example": {
+                    "type": "string",
+                    "example": "7f3mJQ8Hj9hY7Qm2uQyVJQkM7dq2W3XEjL6sCVf8K9Mb"
+                  }
+                }
+              },
+              "message": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "example": {
+                    "type": "string",
+                    "example": "Sign this message to authenticate with AutoPay."
+                  }
+                }
+              },
+              "signature": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "example": {
+                    "type": "string",
+                    "example": "5zUj...base58-or-base64-signature...3m9"
+                  }
+                }
+              },
+              "privateKey": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "example": {
+                    "type": "string",
+                    "example": "optional-wallet-secret-for-first-link"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "UpdatePrivateKeyRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "object"
+          },
+          "required": {
+            "type": "array",
+            "example": [
+              "privateKey"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "privateKey": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "example": {
+                    "type": "string",
+                    "example": "wallet-secret-key"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "CreateTaskRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "object"
+          },
+          "required": {
+            "type": "array",
+            "example": [
+              "prompt",
+              "maxAmountLimit"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "prompt": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "example": {
+                    "type": "string",
+                    "example": "Pay 0.2 SOL weekly to 7f3mJQ8Hj9hY7Qm2uQyVJQkM7dq2W3XEjL6sCVf8K9Mb"
+                  }
+                }
+              },
+              "maxAmountLimit": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "number"
+                  },
+                  "example": {
+                    "type": "number",
+                    "example": 0.5
+                  }
+                }
+              },
+              "expiryAt": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "format": {
+                    "type": "string",
+                    "example": "date-time"
+                  },
+                  "example": {
+                    "type": "string",
+                    "example": "2026-12-31T23:59:59.000Z"
+                  }
+                }
+              }
+            }
           }
         }
       }

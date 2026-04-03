@@ -65,20 +65,6 @@
           "500": {
             "description": "Internal Server Error"
           }
-        },
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Authenticate wallet (signup/login merged)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            }
-          }
         }
       }
     },
@@ -107,16 +93,7 @@
           "500": {
             "description": "Internal Server Error"
           }
-        },
-        "tags": [
-          "Wallet"
-        ],
-        "summary": "Get authenticated wallet profile",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
+        }
       }
     },
     "/wallet/private-key": {
@@ -143,25 +120,6 @@
           },
           "500": {
             "description": "Internal Server Error"
-          }
-        },
-        "tags": [
-          "Wallet"
-        ],
-        "summary": "Update encrypted wallet private key",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePrivateKeyRequest"
-              }
-            }
           }
         }
       }
@@ -191,25 +149,6 @@
           "500": {
             "description": "Internal Server Error"
           }
-        },
-        "tags": [
-          "Task"
-        ],
-        "summary": "Create autopay task from natural language",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTaskRequest"
-              }
-            }
-          }
         }
       }
     },
@@ -235,16 +174,7 @@
           "500": {
             "description": "Internal Server Error"
           }
-        },
-        "tags": [
-          "Task"
-        ],
-        "summary": "Get all tasks for authenticated user",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
+        }
       }
     },
     "/task/execute/{id}": {
@@ -280,16 +210,7 @@
           "500": {
             "description": "Internal Server Error"
           }
-        },
-        "tags": [
-          "Task"
-        ],
-        "summary": "Manually execute a task",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
+        }
       }
     },
     "/transaction/": {
@@ -314,16 +235,7 @@
           "500": {
             "description": "Internal Server Error"
           }
-        },
-        "tags": [
-          "Transaction"
-        ],
-        "summary": "Get transaction logs for authenticated user",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
+        }
       }
     }
   },

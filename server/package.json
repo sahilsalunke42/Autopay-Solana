@@ -20,6 +20,7 @@
     "dev": "nodemon --watch src --watch swagger.ts --ext ts,json --exec \"bun run src/server.ts\"",
     "start": "bun run src/server.ts",
     "typecheck": "tsc --noEmit",
+    "auth:payload": "bun run scripts/generate-postman-login.ts",
     "swagger:generate": "bun run swagger.ts",
     "swagger:dev": "bun run swagger:generate && bun run dev",
     "prisma:generate": "bunx --bun prisma generate",

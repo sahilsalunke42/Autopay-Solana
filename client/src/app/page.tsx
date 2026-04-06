@@ -43,7 +43,7 @@ const featureCards = [
 export default function Page() {
   const [auth, setAuth] = useState<AuthState>(null);
   const [publicKey, setPublicKey] = useState("");
-  const [message, setMessage] = useState("message to sign for authentication");
+  const [message, setMessage] = useState("");
   const [signature, setSignature] = useState("");
   const [privateKey, setPrivateKey] = useState("");
   const [prompt, setPrompt] = useState("Pay 0.2 SOL weekly to 7f3mJQ8Hj9hY7Qm2uQyVJQkM7dq2W3XEjL6sCVf8K9Mb");

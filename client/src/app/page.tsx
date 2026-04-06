@@ -7,6 +7,8 @@ import { api, setAuthToken } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
 
 type AuthState = {
   token: string;
@@ -127,30 +129,29 @@ export default function Page() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(231,195,91,0.12),_transparent_26%),linear-gradient(180deg,#0d0d10_0%,#050505_100%)] text-white">
-      <div className="mx-auto max-w-[1500px] px-6 py-10 md:px-10 md:py-12 xl:px-14">
-        <header className="flex items-center justify-between border-b border-white/10 pb-8 md:pb-10">
-          <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-gold-200/80">AutoPay Solana</p>
-            <h1 className="mt-3 max-w-4xl text-4xl font-semibold leading-[1.05] md:text-6xl">A clean crypto autopay solution built on top of solana</h1>
-          </div>
-          <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-white/80 md:flex">
-            <Sparkles className="h-5 w-5 text-gold-300" />
-            Built by <a href="https://github.com/sahilsalunke42/" target="_blank" rel="noopener noreferrer" className="text-gold-300 hover:underline">@autopay-solana</a>
-          </div>
-        </header>
+      <div className="mx-auto max-w-[1500px] px-6 py-8 md:px-10 md:py-10 xl:px-14">
+        <Navbar walletConnected={Boolean(auth?.user?.publicKey)} />
 
-        <section className="grid gap-8 py-10 lg:grid-cols-[1.1fr_0.95fr] lg:gap-9 lg:py-14">
+        <section id="dashboard" className="grid gap-8 py-4 lg:grid-cols-[1.1fr_0.95fr] lg:gap-9 lg:py-8">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="space-y-8"
           >
+            <div>
+              <p className="text-sm uppercase tracking-[0.28em] text-gold-200/80">Autonomi</p>
+              <h1 className="mt-3 max-w-4xl font-sans text-4xl font-semibold leading-[1.05] md:text-6xl">Autonomous payment engine for Solana</h1>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-white/65">
+                Authenticate with your wallet signature, turn natural language into recurring tasks, and track execution from one command center.
+              </p>
+            </div>
+
             <div className="grid gap-5 md:grid-cols-3">
               {featureCards.map((item) => (
                 <Card key={item.title} className="p-7">
                   <item.icon className="h-6 w-6 text-gold-300" />
-                  <h3 className="mt-4 text-2xl font-medium">{item.title}</h3>
+                  <h3 className="mt-4 font-sans text-2xl font-medium">{item.title}</h3>
                   <p className="mt-3 text-base leading-7 text-white/65">{item.text}</p>
                 </Card>
               ))}
@@ -160,10 +161,7 @@ export default function Page() {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(231,195,91,0.12),transparent_20%)]" />
               <div className="relative">
                 <p className="text-sm uppercase tracking-[0.24em] text-gold-200/80">Wallet login</p>
-                <h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight md:text-5xl">Sign once. Create recurring payments. Execute on schedule.</h2>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-white/65">
-                  This single-page app stays intentionally focused: authenticate with a Solana wallet, create a task from natural language, and manage executions from one view.
-                </p>
+                <h2 className="mt-3 max-w-3xl font-sans text-4xl font-semibold leading-tight md:text-5xl">Sign once. Create recurring payments. Execute on schedule.</h2>
 
                 <div className="mt-8 grid gap-4 md:grid-cols-2">
                   <Input placeholder="Public key" value={publicKey} onChange={(e) => setPublicKey(e.target.value)} />
@@ -188,12 +186,12 @@ export default function Page() {
             transition={{ duration: 0.7, delay: 0.08 }}
             className="space-y-8"
           >
-            <Card className="p-8">
+            <Card id="create-task" className="p-8">
               <div className="flex items-center gap-2 text-gold-300">
                 <Wallet className="h-6 w-6" />
                 <span className="text-sm uppercase tracking-[0.2em]">Task builder</span>
               </div>
-              <h3 className="mt-4 text-4xl font-semibold">Natural language autopay</h3>
+              <h3 className="mt-4 font-sans text-4xl font-semibold">Natural language autopay</h3>
               <div className="mt-6 space-y-4">
                 <Input value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Pay 0.2 SOL weekly to..." />
                 <div className="grid gap-4 md:grid-cols-2">
@@ -206,9 +204,9 @@ export default function Page() {
               </div>
             </Card>
 
-            <Card className="p-8">
+            <Card id="tasks" className="p-8">
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-semibold">Tasks</h3>
+                <h3 className="font-sans text-2xl font-semibold">Tasks</h3>
                 <span className="text-sm uppercase tracking-[0.22em] text-white/45">{tasks.length} items</span>
               </div>
               <div className="mt-5 space-y-4">
@@ -233,9 +231,9 @@ export default function Page() {
               </div>
             </Card>
 
-            <Card className="p-8">
+            <Card id="transactions" className="p-8">
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-semibold">Transactions</h3>
+                <h3 className="font-sans text-2xl font-semibold">Transactions</h3>
                 <span className="text-sm uppercase tracking-[0.22em] text-white/45">{transactions.length} logs</span>
               </div>
               <div className="mt-5 space-y-4">
@@ -258,6 +256,8 @@ export default function Page() {
             </Card>
           </motion.div>
         </section>
+
+        <Footer />
       </div>
     </main>
   );

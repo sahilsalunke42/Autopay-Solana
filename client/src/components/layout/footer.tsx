@@ -10,7 +10,7 @@ export function Footer() {
         <div>
           <p className="text-base uppercase tracking-[0.22em] text-white/60">Links</p>
           <div className="mt-5 flex flex-col gap-3 text-lg">
-            <a href="https://github.com/sahilsalunke42/autopay-solana" target="_blank" rel="noopener noreferrer" className="text-white/85 transition hover:text-white">GitHub</a>
+            <a href="https://github.com/sahilsalunke42/Autopay-Solana" target="_blank" rel="noopener noreferrer" className="text-white/85 transition hover:text-white">GitHub</a>
             <a href="/docs" className="text-white/85 transition hover:text-white">Docs</a>
             <a href="https://solana.com" target="_blank" rel="noopener noreferrer" className="text-white/85 transition hover:text-white">Solana</a>
           </div>

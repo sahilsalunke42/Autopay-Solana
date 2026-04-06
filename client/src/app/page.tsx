@@ -41,7 +41,7 @@ const featureCards = [
 export default function Page() {
   const [auth, setAuth] = useState<AuthState>(null);
   const [publicKey, setPublicKey] = useState("");
-  const [message, setMessage] = useState("Sign in to AutoPay to continue.");
+  const [message, setMessage] = useState("message to sign for authentication");
   const [signature, setSignature] = useState("");
   const [privateKey, setPrivateKey] = useState("");
   const [prompt, setPrompt] = useState("Pay 0.2 SOL weekly to 7f3mJQ8Hj9hY7Qm2uQyVJQkM7dq2W3XEjL6sCVf8K9Mb");
@@ -131,11 +131,11 @@ export default function Page() {
         <header className="flex items-center justify-between border-b border-white/10 pb-6">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-gold-200/80">AutoPay Solana</p>
-            <h1 className="mt-2 text-2xl font-semibold md:text-4xl">A clean crypto autopay console for the hackathon.</h1>
+            <h1 className="mt-2 text-2xl font-semibold md:text-4xl">A clean crypto autopay solution built on top of solana</h1>
           </div>
           <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 md:flex">
             <Sparkles className="h-4 w-4 text-gold-300" />
-            Colosseum-inspired editorial UI
+            Built by <a href="https://github.com/sahilsalunke42/" target="_blank" rel="noopener noreferrer" className="text-gold-300 hover:underline">@autopay-solana</a>
           </div>
         </header>
 

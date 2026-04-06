@@ -140,7 +140,7 @@ export default function Page() {
             className="space-y-8"
           >
             <div>
-              <p className="text-sm uppercase tracking-[0.28em] text-gold-200/80">Autonomi</p>
+              <p className="text-sm uppercase tracking-[0.28em] text-gold-200/80">AutoSol</p>
               <h1 className="mt-3 max-w-4xl font-sans text-4xl font-semibold leading-[1.05] md:text-6xl">Autonomous payment engine for Solana</h1>
               <p className="mt-5 max-w-2xl text-base leading-8 text-white/65">
                 Authenticate with your wallet signature, turn natural language into recurring tasks, and track execution from one command center.

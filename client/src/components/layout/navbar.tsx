@@ -8,7 +8,7 @@ export function Navbar({ walletConnected }: NavbarProps) {
       <div className="flex flex-wrap items-center gap-4 md:gap-6">
         <a href="#dashboard" className="mr-2 inline-flex items-center gap-2">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gold-300 text-sm font-bold text-black">A</span>
-          <span className="text-lg font-semibold">Autonomi</span>
+          <span className="text-lg font-semibold">AutoSol</span>
         </a>
 
         <a href="#dashboard" className="text-sm text-white/80 transition hover:text-white">Dashboard</a>

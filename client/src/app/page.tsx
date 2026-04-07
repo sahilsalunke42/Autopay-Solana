@@ -82,7 +82,7 @@ export default function Page() {
   async function handleLogin() {
     try {
       setStatus("Verifying signature...");
-      const res = await api.post("/auth/login", {
+      const res = await api.post("/api/auth/login", {
         publicKey,
         message,
         signature,

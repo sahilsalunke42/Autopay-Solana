@@ -86,7 +86,7 @@ export default function Page() {
         publicKey,
         message,
         signature,
-        privateKey: privateKey || undefined,
+        privateKey: privateKey 
       });
       setAuth(res.data);
       setAuthToken(res.data.token);

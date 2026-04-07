@@ -53,10 +53,10 @@ export function createApp() {
     }),
   );
 
-  app.use("/auth", authRouter);
-  app.use("/wallet", walletRouter);
-  app.use("/task", taskRouter);
-  app.use("/transaction", transactionRouter);
+  app.use("/api/auth", authRouter);
+  app.use("/api/wallet", walletRouter);
+  app.use("/api/task", taskRouter);
+  app.use("/api/transaction", transactionRouter);
 
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error("Unhandled application error", {

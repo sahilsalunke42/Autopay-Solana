@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import { motion } from "framer-motion";
 import { ArrowRight, Wallet, Clock3, ReceiptText, ShieldCheck, Sparkles } from "lucide-react";
 import { api, setAuthToken } from "@/lib/api";
@@ -43,7 +44,7 @@ const featureCards = [
 export default function Page() {
   const [auth, setAuth] = useState<AuthState>(null);
   const [publicKey, setPublicKey] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("Sign this message to authenticate with AutoPay.");
   const [signature, setSignature] = useState("");
   const [privateKey, setPrivateKey] = useState("");
   const [prompt, setPrompt] = useState("Pay 0.2 SOL weekly to 7f3mJQ8Hj9hY7Qm2uQyVJQkM7dq2W3XEjL6sCVf8K9Mb");
@@ -71,7 +72,7 @@ export default function Page() {
 
   async function refreshData() {
     try {
-      const [taskRes, txRes] = await Promise.all([api.get("/task"), api.get("/transaction")]);
+      const [taskRes, txRes] = await Promise.all([api.get("/api/task"), api.get("/api/transaction")]);
       setTasks(taskRes.data.tasks ?? []);
       setTransactions(txRes.data.transactions ?? []);
     } catch {
@@ -86,7 +87,7 @@ export default function Page() {
         publicKey,
         message,
         signature,
-        privateKey: privateKey 
+        privateKey: privateKey || undefined,
       });
       setAuth(res.data);
       setAuthToken(res.data.token);
@@ -94,7 +95,12 @@ export default function Page() {
       setStatus("Authenticated.");
       await refreshData();
     } catch (error) {
-      setStatus("Login failed. Use a real wallet signature, not placeholder text.");
+      if (axios.isAxiosError(error)) {
+        const backendMessage = (error.response?.data as { error?: string } | undefined)?.error;
+        setStatus(backendMessage ?? "Login failed. Use a real wallet signature, not placeholder text.");
+      } else {
+        setStatus("Login failed. Use a real wallet signature, not placeholder text.");
+      }
       console.error(error);
     }
   }
@@ -102,7 +108,7 @@ export default function Page() {
   async function handleCreateTask() {
     try {
       setStatus("Creating task...");
-      await api.post("/task/create", {
+      await api.post("/api/task/create", {
         prompt,
         maxAmountLimit: Number(maxAmountLimit),
         expiryAt: expiryAt || undefined,
@@ -118,7 +124,7 @@ export default function Page() {
   async function handleManualExecute(taskId: string) {
     try {
       setStatus("Executing payment...");
-      await api.post(`/task/execute/${taskId}`);
+      await api.post(`/api/task/execute/${taskId}`);
       setStatus("Execution complete.");
       await refreshData();
     } catch (error) {
@@ -171,7 +177,7 @@ export default function Page() {
                 </div>
 
                 <div className="mt-7 flex flex-wrap items-center gap-4">
-                  <Button onClick={handleLogin}>
+                  <Button onClick={handleLogin} className="flex items-center">
                     Login with Wallet <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <p className="text-base text-white/55">{status}</p>

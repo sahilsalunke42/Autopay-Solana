@@ -18,6 +18,6 @@ const router = Router();
 	#swagger.responses[400] = { description: 'Invalid request body' }
 	#swagger.responses[401] = { description: 'Invalid wallet signature' }
 */
-router.post("/login", loginHandler);
+router.post("/auth/login", loginHandler);
 
 export { router as authRouter };

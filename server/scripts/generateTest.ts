@@ -18,4 +18,3 @@ const payload = {
 };
 
 console.log(JSON.stringify(payload, null, 2));
-console.log("\nUse this exact JSON as body for POST /auth/login in Postman.");

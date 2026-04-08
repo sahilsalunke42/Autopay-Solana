@@ -47,7 +47,10 @@ export default function Page() {
   const [message, setMessage] = useState("Sign this message to authenticate with AutoPay.");
   const [signature, setSignature] = useState("");
   const [privateKey, setPrivateKey] = useState("");
-  const [prompt, setPrompt] = useState("Pay 0.2 SOL weekly to 7f3mJQ8Hj9hY7Qm2uQyVJQkM7dq2W3XEjL6sCVf8K9Mb");
+  const [amount, setAmount] = useState("0.2");
+  const [token, setToken] = useState("SOL");
+  const [receiverAddress, setReceiverAddress] = useState("");
+  const [frequency, setFrequency] = useState("weekly");
   const [maxAmountLimit, setMaxAmountLimit] = useState("0.5");
   const [expiryAt, setExpiryAt] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -87,7 +90,6 @@ export default function Page() {
         publicKey,
         message,
         signature,
-        privateKey: privateKey || undefined,
       });
       setAuth(res.data);
       setAuthToken(res.data.token);
@@ -105,11 +107,30 @@ export default function Page() {
     }
   }
 
+  async function handleLinkPrivateKey() {
+    try {
+      if (!privateKey.trim()) {
+        setStatus("Enter a private key to link wallet execution.");
+        return;
+      }
+
+      setStatus("Linking private key...");
+      await api.post("/api/wallet/private-key", { privateKey });
+      setStatus("Private key linked successfully.");
+    } catch (error) {
+      setStatus("Failed to link private key.");
+      console.error(error);
+    }
+  }
+
   async function handleCreateTask() {
     try {
       setStatus("Creating task...");
       await api.post("/api/task/create", {
-        prompt,
+        amount: Number(amount),
+        token,
+        receiverAddress,
+        frequency,
         maxAmountLimit: Number(maxAmountLimit),
         expiryAt: expiryAt || undefined,
       });
@@ -173,7 +194,6 @@ export default function Page() {
                   <Input placeholder="Public key" value={publicKey} onChange={(e) => setPublicKey(e.target.value)} />
                   <Input placeholder="Message" value={message} onChange={(e) => setMessage(e.target.value)} />
                   <Input placeholder="Signature" value={signature} onChange={(e) => setSignature(e.target.value)} />
-                  <Input placeholder="Private key (first link only)" value={privateKey} onChange={(e) => setPrivateKey(e.target.value)} />
                 </div>
 
                 <div className="mt-7 flex flex-wrap items-center gap-4">
@@ -181,6 +201,24 @@ export default function Page() {
                     Login with Wallet <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <p className="text-base text-white/55">{status}</p>
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/55">Wallet key linking</p>
+                  <div className="mt-3 flex flex-col gap-3 md:flex-row">
+                    <Input
+                      placeholder="Private key (link after login for task execution)"
+                      value={privateKey}
+                      onChange={(e) => setPrivateKey(e.target.value)}
+                    />
+                    <Button
+                      onClick={handleLinkPrivateKey}
+                      className="md:min-w-[180px]"
+                      disabled={!auth?.token}
+                    >
+                      Link Private Key
+                    </Button>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -197,9 +235,16 @@ export default function Page() {
                 <Wallet className="h-6 w-6" />
                 <span className="text-sm uppercase tracking-[0.2em]">Task builder</span>
               </div>
-              <h3 className="mt-4 font-sans text-4xl font-semibold">Natural language autopay</h3>
+              <h3 className="mt-4 font-sans text-4xl font-semibold">Manual autopay configuration</h3>
               <div className="mt-6 space-y-4">
-                <Input value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Pay 0.2 SOL weekly to..." />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount (e.g. 0.2)" />
+                  <Input value={token} onChange={(e) => setToken(e.target.value)} placeholder="Token (e.g. SOL)" />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Input value={receiverAddress} onChange={(e) => setReceiverAddress(e.target.value)} placeholder="Receiver public key" />
+                  <Input value={frequency} onChange={(e) => setFrequency(e.target.value)} placeholder="Frequency: daily or weekly" />
+                </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <Input value={maxAmountLimit} onChange={(e) => setMaxAmountLimit(e.target.value)} placeholder="Max amount limit" />
                   <Input value={expiryAt} onChange={(e) => setExpiryAt(e.target.value)} placeholder="Expiry ISO date (optional)" />

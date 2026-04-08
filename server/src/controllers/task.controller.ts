@@ -6,11 +6,22 @@ import { parseNaturalLanguageTask } from "../services/ai.service";
 import { ACTIVE_TASK_STATUS, computeNextExecutionAt, executeTask } from "../services/task.service";
 import { logger } from "../utils/logger";
 
-const createTaskSchema = z.object({
+const createTaskByPromptSchema = z.object({
   prompt: z.string().min(5),
   maxAmountLimit: z.number().positive(),
   expiryAt: z.string().datetime().optional(),
 });
+
+const createTaskManualSchema = z.object({
+  amount: z.number().positive(),
+  token: z.string().trim().min(1).transform((value) => value.toUpperCase()),
+  receiverAddress: z.string().trim().min(32).max(44),
+  frequency: z.enum(["daily", "weekly"]),
+  maxAmountLimit: z.number().positive(),
+  expiryAt: z.string().datetime().optional(),
+});
+
+const createTaskSchema = z.union([createTaskByPromptSchema, createTaskManualSchema]);
 
 export async function createTaskHandler(req: Request, res: Response) {
   try {
@@ -24,7 +35,15 @@ export async function createTaskHandler(req: Request, res: Response) {
       return res.status(400).json({ error: "Invalid request body", details: parsed.error.flatten() });
     }
 
-    const extracted = await parseNaturalLanguageTask(parsed.data.prompt);
+    const extracted = "prompt" in parsed.data
+      ? await parseNaturalLanguageTask(parsed.data.prompt)
+      : {
+          amount: parsed.data.amount,
+          token: parsed.data.token,
+          receiverAddress: parsed.data.receiverAddress,
+          frequency: parsed.data.frequency,
+        };
+
     if (extracted.amount > parsed.data.maxAmountLimit) {
       return res.status(400).json({ error: "Task amount exceeds maxAmountLimit" });
     }
@@ -51,7 +70,11 @@ export async function createTaskHandler(req: Request, res: Response) {
       },
     });
 
-    return res.status(201).json({ task, extracted });
+    return res.status(201).json({
+      task,
+      extracted,
+      mode: "prompt" in parsed.data ? "nlp" : "manual",
+    });
   } catch (error) {
     logger.error("Create task failed", { error: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Failed to create task" });

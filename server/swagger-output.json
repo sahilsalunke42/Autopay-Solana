@@ -49,7 +49,7 @@
         }
       }
     },
-    "/auth/login": {
+    "/api/auth/login": {
       "post": {
         "description": "",
         "responses": {
@@ -65,10 +65,24 @@
           "500": {
             "description": "Internal Server Error"
           }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Authenticate wallet (wallet-safe login flow)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
         }
       }
     },
-    "/wallet/me": {
+    "/api/wallet/me": {
       "get": {
         "description": "",
         "parameters": [
@@ -93,10 +107,19 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "Get authenticated wallet profile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
-    "/wallet/private-key": {
+    "/api/wallet/private-key": {
       "post": {
         "description": "",
         "parameters": [
@@ -121,10 +144,29 @@
           "500": {
             "description": "Internal Server Error"
           }
+        },
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "Update encrypted wallet private key",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePrivateKeyRequest"
+              }
+            }
+          }
         }
       }
     },
-    "/task/create": {
+    "/api/task/create": {
       "post": {
         "description": "",
         "parameters": [
@@ -149,10 +191,29 @@
           "500": {
             "description": "Internal Server Error"
           }
+        },
+        "tags": [
+          "Task"
+        ],
+        "summary": "Create autopay task (manual fields or natural language)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          }
         }
       }
     },
-    "/task/": {
+    "/api/task/": {
       "get": {
         "description": "",
         "parameters": [
@@ -174,10 +235,19 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Task"
+        ],
+        "summary": "Get all tasks for authenticated user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
-    "/task/execute/{id}": {
+    "/api/task/execute/{id}": {
       "post": {
         "description": "",
         "parameters": [
@@ -210,10 +280,19 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Task"
+        ],
+        "summary": "Manually execute a task",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
-    "/transaction/": {
+    "/api/transaction/": {
       "get": {
         "description": "",
         "parameters": [
@@ -235,7 +314,16 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Get transaction logs for authenticated user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     }
   },
@@ -307,19 +395,6 @@
                     "example": "5zUj...base58-or-base64-signature...3m9"
                   }
                 }
-              },
-              "privateKey": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "example": "string"
-                  },
-                  "example": {
-                    "type": "string",
-                    "example": "optional-wallet-secret-for-first-link"
-                  }
-                }
               }
             }
           }
@@ -364,63 +439,123 @@
       "CreateTaskRequest": {
         "type": "object",
         "properties": {
-          "type": {
-            "type": "string",
-            "example": "object"
-          },
-          "required": {
+          "oneOf": {
             "type": "array",
-            "example": [
-              "prompt",
-              "maxAmountLimit"
-            ],
             "items": {
-              "type": "string"
-            }
-          },
-          "properties": {
-            "type": "object",
-            "properties": {
-              "prompt": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "example": "string"
-                  },
-                  "example": {
-                    "type": "string",
-                    "example": "Pay 0.2 SOL weekly to 7f3mJQ8Hj9hY7Qm2uQyVJQkM7dq2W3XEjL6sCVf8K9Mb"
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "amount",
+                    "token",
+                    "receiverAddress",
+                    "frequency",
+                    "maxAmountLimit"
+                  ],
+                  "items": {
+                    "type": "string"
                   }
-                }
-              },
-              "maxAmountLimit": {
-                "type": "object",
+                },
                 "properties": {
-                  "type": {
-                    "type": "string",
-                    "example": "number"
-                  },
-                  "example": {
-                    "type": "number",
-                    "example": 0.5
-                  }
-                }
-              },
-              "expiryAt": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "example": "string"
-                  },
-                  "format": {
-                    "type": "string",
-                    "example": "date-time"
-                  },
-                  "example": {
-                    "type": "string",
-                    "example": "2026-12-31T23:59:59.000Z"
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "number"
+                        },
+                        "example": {
+                          "type": "number",
+                          "example": 0.2
+                        }
+                      }
+                    },
+                    "token": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "SOL"
+                        }
+                      }
+                    },
+                    "receiverAddress": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "7f3mJQ8Hj9hY7Qm2uQyVJQkM7dq2W3XEjL6sCVf8K9Mb"
+                        }
+                      }
+                    },
+                    "frequency": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "enum": {
+                          "type": "array",
+                          "example": [
+                            "daily",
+                            "weekly"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "weekly"
+                        }
+                      }
+                    },
+                    "maxAmountLimit": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "number"
+                        },
+                        "example": {
+                          "type": "number",
+                          "example": 0.5
+                        }
+                      }
+                    },
+                    "expiryAt": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "date-time"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "2026-12-31T23:59:59.000Z"
+                        }
+                      }
+                    }
                   }
                 }
               }

@@ -6,7 +6,7 @@ const router = Router();
 
 /*
 	#swagger.tags = ['Task']
-	#swagger.summary = 'Create autopay task from natural language'
+	#swagger.summary = 'Create autopay task (manual fields or natural language)'
 	#swagger.security = [{ "bearerAuth": [] }]
 	#swagger.requestBody = {
 		required: true,

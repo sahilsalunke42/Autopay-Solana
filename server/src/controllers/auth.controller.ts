@@ -13,7 +13,6 @@ const loginSchema = z.object({
   publicKey: z.string().min(32).max(44),
   message: z.string().min(1),
   signature: z.string().min(20),
-  privateKey: z.string().min(20).optional(),
 });
 
 function decodeSignature(rawSignature: string): Uint8Array {
@@ -31,7 +30,7 @@ export async function loginHandler(req: Request, res: Response) {
       return res.status(400).json({ error: "Invalid request body", details: parsed.error.flatten() });
     }
 
-    const { publicKey, message, signature, privateKey } = parsed.data;
+    const { publicKey, message, signature } = parsed.data;
     const pubKey = new PublicKey(publicKey);
     const isValid = nacl.sign.detached.verify(
       new TextEncoder().encode(message),
@@ -49,16 +48,13 @@ export async function loginHandler(req: Request, res: Response) {
     });
 
     if (!wallet) {
-      if (!privateKey) {
-        return res.status(400).json({ error: "privateKey is required when wallet is first linked" });
-      }
-
       const created = await prisma.user.create({
         data: {
           wallet: {
             create: {
               publicKey,
-              encryptedPrivateKey: encrypt(privateKey),
+              // Create wallet identity first; private key can be linked later via /api/wallet/private-key.
+              encryptedPrivateKey: encrypt("__UNLINKED_PRIVATE_KEY__"),
             },
           },
         },
@@ -73,12 +69,6 @@ export async function loginHandler(req: Request, res: Response) {
         ...created.wallet,
         user: created,
       };
-    } else if (privateKey) {
-      wallet = await prisma.wallet.update({
-        where: { id: wallet.id },
-        data: { encryptedPrivateKey: encrypt(privateKey) },
-        include: { user: true },
-      });
     }
 
     const token = jwt.sign(

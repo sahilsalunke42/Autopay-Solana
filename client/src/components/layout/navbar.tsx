@@ -1,13 +1,14 @@
 type NavbarProps = {
   walletConnected: boolean;
 };
+import AutoSol from "@/assets/AutoSol.png"
 
 export function Navbar({ walletConnected }: NavbarProps) {
   return (
     <nav className="sticky top-4 z-50 mb-8 rounded-2xl border border-white/10 bg-black/40 px-4 py-3 backdrop-blur-xl md:px-6 md:py-4">
       <div className="flex flex-wrap items-center gap-4 md:gap-6">
         <a href="#dashboard" className="mr-2 inline-flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gold-300 text-sm font-bold text-black">A</span>
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gold-300 text-sm font-bold text-black"><img src={AutoSol.src} alt="AutoSol" className="h-full w-full" /></span>
           <span className="text-lg font-semibold">AutoSol</span>
         </a>
 

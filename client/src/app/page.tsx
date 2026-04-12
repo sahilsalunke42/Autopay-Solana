@@ -154,6 +154,25 @@ export default function Page() {
     }
   }
 
+  async function handleLogout() {
+    try {
+      setStatus("Logging out...");
+      await api.post("/api/auth/logout");
+      setAuth(null);
+      setAuthToken(null);
+      localStorage.removeItem("autopay-auth");
+      setStatus("Logged out successfully.");
+      setPublicKey("");
+      setSignature("");
+      setPrivateKey("");
+      setTasks([]);
+      setTransactions([]);
+    } catch (error) {
+      console.error(error);
+      setStatus("Logout failed. Try clearing your session manually.");
+    }
+  }
+
   return (
     <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(231,195,91,0.12),_transparent_26%),linear-gradient(180deg,#0d0d10_0%,#050505_100%)] text-white">
       <div className="mx-auto max-w-[1500px] px-6 py-8 md:px-10 md:py-10 xl:px-14">
@@ -197,10 +216,21 @@ export default function Page() {
                 </div>
 
                 <div className="mt-7 flex flex-wrap items-center gap-4">
-                  <Button onClick={handleLogin} className="flex items-center">
-                    Login with Wallet <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <p className="text-base text-white/55">{status}</p>
+                  {!auth?.token ? (
+                    <>
+                      <Button onClick={handleLogin} className="flex items-center">
+                        Login with Wallet <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                      <p className="text-base text-white/55">{status}</p>
+                    </>
+                  ) : (
+                    <>
+                      <Button onClick={handleLogout} className="flex items-center border-white/30 bg-transparent text-white hover:bg-white/5">
+                        Logout
+                      </Button>
+                      <p className="text-base text-white/55">Connected: {auth.user.publicKey.slice(0, 8)}...</p>
+                    </>
+                  )}
                 </div>
 
                 <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4">

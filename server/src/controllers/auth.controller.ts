@@ -94,3 +94,14 @@ export async function loginHandler(req: Request, res: Response) {
     return res.status(500).json({ error: "Authentication failed" });
   }
 }
+
+export async function logOutHandler(req: Request, res: Response) {
+  // Logout is stateless in JWT. Client clears token from localStorage.
+  // Server simply returns success.
+  try {
+    return res.json({ message: "Successfully logged out" });
+  } catch (error) {
+    logger.error("Logout failed", { error: error instanceof Error ? error.message : String(error) });
+    return res.status(500).json({ error: "Logout failed" });
+  }
+}

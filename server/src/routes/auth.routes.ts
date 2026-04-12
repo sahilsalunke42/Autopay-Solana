@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { loginHandler } from "../controllers/auth.controller";
+import { loginHandler, logOutHandler } from "../controllers/auth.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -19,5 +20,13 @@ const router = Router();
 	#swagger.responses[401] = { description: 'Invalid wallet signature' }
 */
 router.post("/login", loginHandler);
+
+/*
+	#swagger.tags = ['Auth']
+	#swagger.summary = 'Logout (clear session)'
+	#swagger.responses[200] = { description: 'Successfully logged out' }
+	#swagger.responses[401] = { description: 'Unauthorized' }
+*/
+router.post("/logout", authMiddleware, logOutHandler);
 
 export { router as authRouter };

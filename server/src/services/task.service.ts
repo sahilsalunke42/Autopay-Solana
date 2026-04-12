@@ -3,6 +3,7 @@ import { executeSolPayment } from "./solana.service";
 import { logger } from "../utils/logger";
 
 const ACTIVE_TASK_STATUS = "ACTIVE" as never;
+const PAUSED_TASK_STATUS = "PAUSED" as never;
 const SUCCESS_TX_STATUS = "SUCCESS" as never;
 const FAILED_TX_STATUS = "FAILED" as never;
 
@@ -131,4 +132,58 @@ export async function executeTask(taskId: string, options?: { userId?: string; s
   }
 }
 
-export { ACTIVE_TASK_STATUS };
+export async function pauseTask(taskId: string, userId: string) {
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  if (task.userId !== userId) {
+    throw new Error("Task does not belong to authenticated user");
+  }
+
+  return prisma.task.update({
+    where: { id: taskId },
+    data: { status: PAUSED_TASK_STATUS },
+  });
+}
+
+export async function resumeTask(taskId: string, userId: string) {
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  if (task.userId !== userId) {
+    throw new Error("Task does not belong to authenticated user");
+  }
+
+  return prisma.task.update({
+    where: { id: taskId },
+    data: { status: ACTIVE_TASK_STATUS },
+  });
+}
+
+export async function deleteTask(taskId: string, userId: string) {
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  if (task.userId !== userId) {
+    throw new Error("Task does not belong to authenticated user");
+  }
+
+  await prisma.transaction.deleteMany({
+    where: { taskId },
+  });
+
+  return prisma.task.delete({
+    where: { id: taskId },
+  });
+}
+
+export { ACTIVE_TASK_STATUS, PAUSED_TASK_STATUS };

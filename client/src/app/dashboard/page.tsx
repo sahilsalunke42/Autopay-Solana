@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Wallet } from "lucide-react";
+import { ArrowRight, Wallet, Trash2, Pause, Play } from "lucide-react";
 import { api, setAuthToken } from "@/lib/api";
+import { pauseTask, resumeTask, deleteTask, executeTask, linkPrivateKey, createTask } from "@/lib/task-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -79,32 +80,31 @@ export default function DashboardPage() {
   }
 
   async function handleLinkPrivateKey() {
-    try {
-      if (!privateKey.trim()) {
-        setStatus("Enter a private key to link wallet execution.");
-        return;
-      }
-      setStatus("Linking private key...");
-      await api.post("/api/wallet/private-key", { privateKey });
+    if (!privateKey.trim()) {
+      setStatus("Enter a private key to link wallet execution.");
+      return;
+    }
+    setStatus("Linking private key...");
+    const result = await linkPrivateKey(privateKey);
+    if (result.success) {
       setStatus("Private key linked successfully.");
       setPrivateKey("");
-    } catch (error) {
-      setStatus("Failed to link private key.");
-      console.error(error);
+    } else {
+      setStatus(result.error || "Failed to link private key.");
     }
   }
 
   async function handleCreateTask() {
-    try {
-      setStatus("Creating task...");
-      await api.post("/api/task/create", {
-        amount: Number(amount),
-        token,
-        receiverAddress,
-        frequency,
-        maxAmountLimit: Number(maxAmountLimit),
-        expiryAt: expiryAt || undefined,
-      });
+    setStatus("Creating task...");
+    const result = await createTask({
+      amount: Number(amount),
+      token,
+      receiverAddress,
+      frequency,
+      maxAmountLimit: Number(maxAmountLimit),
+      expiryAt: expiryAt || undefined,
+    });
+    if (result.success) {
       setStatus("Task created.");
       setAmount("0.2");
       setToken("SOL");
@@ -113,21 +113,55 @@ export default function DashboardPage() {
       setMaxAmountLimit("0.5");
       setExpiryAt("");
       await refreshData();
-    } catch (error) {
-      setStatus("Task creation failed.");
-      console.error(error);
+    } else {
+      setStatus(result.error || "Task creation failed.");
     }
   }
 
-  async function handleManualExecute(taskId: string) {
-    try {
-      setStatus("Executing payment...");
-      await api.post(`/api/task/execute/${taskId}`);
+  async function handleExecuteTask(taskId: string) {
+    setStatus("Executing payment...");
+    const result = await executeTask(taskId);
+    if (result.success) {
       setStatus("Execution complete.");
       await refreshData();
-    } catch (error) {
-      setStatus("Execution failed.");
-      console.error(error);
+    } else {
+      setStatus(result.error || "Execution failed.");
+    }
+  }
+
+  async function handlePauseTask(taskId: string) {
+    setStatus("Pausing task...");
+    const result = await pauseTask(taskId);
+    if (result.success) {
+      setStatus("Task paused.");
+      await refreshData();
+    } else {
+      setStatus(result.error || "Failed to pause task.");
+    }
+  }
+
+  async function handleResumeTask(taskId: string) {
+    setStatus("Resuming task...");
+    const result = await resumeTask(taskId);
+    if (result.success) {
+      setStatus("Task resumed.");
+      await refreshData();
+    } else {
+      setStatus(result.error || "Failed to resume task.");
+    }
+  }
+
+  async function handleDeleteTask(taskId: string) {
+    if (!confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+      return;
+    }
+    setStatus("Deleting task...");
+    const result = await deleteTask(taskId);
+    if (result.success) {
+      setStatus("Task deleted.");
+      await refreshData();
+    } else {
+      setStatus(result.error || "Failed to delete task.");
     }
   }
 
@@ -229,14 +263,33 @@ export default function DashboardPage() {
                 ) : (
                   tasks.map((task) => (
                     <div key={task.id} className="rounded-3xl border border-white/10 bg-black/20 p-5">
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-3 mb-4">
                         <div>
                           <p className="text-lg font-medium text-white">{task.amount} {task.token}</p>
-                          <p className="mt-1 text-sm text-white/50">{task.frequency} · {task.status}</p>
+                          <p className="mt-1 text-sm text-white/50">
+                            {task.frequency} · <span className={task.status === "ACTIVE" ? "text-green-400" : "text-yellow-400"}>{task.status}</span>
+                          </p>
                           <p className="mt-1 truncate text-sm text-white/45">{task.receiverAddress}</p>
                         </div>
-                        <Button onClick={() => void handleManualExecute(task.id)} className="h-10 px-5 text-sm">
-                          Execute
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        {task.status === "ACTIVE" && (
+                          <>
+                            <Button onClick={() => void handleExecuteTask(task.id)} className="h-9 px-4 text-xs">
+                              Execute
+                            </Button>
+                            <Button onClick={() => void handlePauseTask(task.id)} className="h-9 px-4 text-xs border-white/30 bg-transparent text-white hover:bg-white/5">
+                              <Pause className="h-3 w-3 mr-1" /> Pause
+                            </Button>
+                          </>
+                        )}
+                        {task.status === "PAUSED" && (
+                          <Button onClick={() => void handleResumeTask(task.id)} className="h-9 px-4 text-xs">
+                            <Play className="h-3 w-3 mr-1" /> Resume
+                          </Button>
+                        )}
+                        <Button onClick={() => void handleDeleteTask(task.id)} className="h-9 px-4 text-xs border-red-500/30 bg-transparent text-red-400 hover:bg-red-500/10">
+                          <Trash2 className="h-3 w-3 mr-1" /> Delete
                         </Button>
                       </div>
                     </div>

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { createTaskHandler, executeTaskHandler, getTasksHandler } from "../controllers/task.controller";
+import { createTaskHandler, executeTaskHandler, getTasksHandler, pauseTaskHandler, resumeTaskHandler, deleteTaskHandler } from "../controllers/task.controller";
 
 const router = Router();
 
@@ -38,5 +38,44 @@ router.get("/", authMiddleware, getTasksHandler);
 	}
 */
 router.post("/execute/:id", authMiddleware, executeTaskHandler);
+
+/*
+	#swagger.tags = ['Task']
+	#swagger.summary = 'Pause a task (stops scheduler execution)'
+	#swagger.security = [{ "bearerAuth": [] }]
+	#swagger.parameters['id'] = {
+		in: 'path',
+		required: true,
+		type: 'string',
+		description: 'Task id'
+	}
+*/
+router.post("/pause/:id", authMiddleware, pauseTaskHandler);
+
+/*
+	#swagger.tags = ['Task']
+	#swagger.summary = 'Resume a paused task'
+	#swagger.security = [{ "bearerAuth": [] }]
+	#swagger.parameters['id'] = {
+		in: 'path',
+		required: true,
+		type: 'string',
+		description: 'Task id'
+	}
+*/
+router.post("/resume/:id", authMiddleware, resumeTaskHandler);
+
+/*
+	#swagger.tags = ['Task']
+	#swagger.summary = 'Delete a task permanently'
+	#swagger.security = [{ "bearerAuth": [] }]
+	#swagger.parameters['id'] = {
+		in: 'path',
+		required: true,
+		type: 'string',
+		description: 'Task id'
+	}
+*/
+router.delete("/:id", authMiddleware, deleteTaskHandler);
 
 export { router as taskRouter };

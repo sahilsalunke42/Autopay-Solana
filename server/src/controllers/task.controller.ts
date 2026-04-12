@@ -3,7 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 import { prisma } from "../config/db";
 import { parseNaturalLanguageTask } from "../services/ai.service";
-import { ACTIVE_TASK_STATUS, computeNextExecutionAt, executeTask } from "../services/task.service";
+import { ACTIVE_TASK_STATUS, computeNextExecutionAt, executeTask, pauseTask, resumeTask, deleteTask } from "../services/task.service";
 import { logger } from "../utils/logger";
 
 const createTaskByPromptSchema = z.object({
@@ -129,5 +129,89 @@ export async function executeTaskHandler(req: Request, res: Response) {
   } catch (error) {
     logger.error("Manual task execution failed", { error: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: "Failed to execute task" });
+  }
+}
+
+export async function pauseTaskHandler(req: Request, res: Response) {
+  try {
+    const authUser = req.authUser;
+    if (!authUser) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const taskIdRaw = req.params.id;
+    if (!taskIdRaw) {
+      return res.status(400).json({ error: "Task id is required" });
+    }
+    const taskId = Array.isArray(taskIdRaw) ? taskIdRaw[0] : taskIdRaw;
+    if (!taskId) {
+      return res.status(400).json({ error: "Task id is required" });
+    }
+
+    const task = await pauseTask(taskId, authUser.userId);
+    return res.json({ task, message: "Task paused successfully" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    if (message.includes("not found") || message.includes("does not belong")) {
+      return res.status(400).json({ error: message });
+    }
+    logger.error("Pause task failed", { error: message });
+    return res.status(500).json({ error: "Failed to pause task" });
+  }
+}
+
+export async function resumeTaskHandler(req: Request, res: Response) {
+  try {
+    const authUser = req.authUser;
+    if (!authUser) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const taskIdRaw = req.params.id;
+    if (!taskIdRaw) {
+      return res.status(400).json({ error: "Task id is required" });
+    }
+    const taskId = Array.isArray(taskIdRaw) ? taskIdRaw[0] : taskIdRaw;
+    if (!taskId) {
+      return res.status(400).json({ error: "Task id is required" });
+    }
+
+    const task = await resumeTask(taskId, authUser.userId);
+    return res.json({ task, message: "Task resumed successfully" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    if (message.includes("not found") || message.includes("does not belong")) {
+      return res.status(400).json({ error: message });
+    }
+    logger.error("Resume task failed", { error: message });
+    return res.status(500).json({ error: "Failed to resume task" });
+  }
+}
+
+export async function deleteTaskHandler(req: Request, res: Response) {
+  try {
+    const authUser = req.authUser;
+    if (!authUser) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const taskIdRaw = req.params.id;
+    if (!taskIdRaw) {
+      return res.status(400).json({ error: "Task id is required" });
+    }
+    const taskId = Array.isArray(taskIdRaw) ? taskIdRaw[0] : taskIdRaw;
+    if (!taskId) {
+      return res.status(400).json({ error: "Task id is required" });
+    }
+
+    const task = await deleteTask(taskId, authUser.userId);
+    return res.json({ message: "Task deleted successfully", deletedTaskId: task.id });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    if (message.includes("not found") || message.includes("does not belong")) {
+      return res.status(400).json({ error: message });
+    }
+    logger.error("Delete task failed", { error: message });
+    return res.status(500).json({ error: "Failed to delete task" });
   }
 }

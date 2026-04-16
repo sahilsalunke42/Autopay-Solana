@@ -40,22 +40,47 @@ function normalizeFrequency(value: string): ParsedTask["frequency"] {
 }
 
 function tryRegexParser(prompt: string): ParsedTask | null {
-  // Flexible pattern with multiple recurrence styles.
-  const match = prompt.match(/(?:pay|send|transfer)\s+([0-9]*\.?[0-9]+)\s+([a-zA-Z]+)\s+(?:(daily|weekly|monthly|quarterly|yearly|annually)|(?:every|after)\s+(6)\s+months?)\s+to\s+([1-9A-HJ-NP-Za-km-z]{32,44})/i);
-  if (!match || !match[1] || !match[2] || !match[5]) {
+  // Style-flexible parser that accepts different ordering, e.g.:
+  // - "pay 0.1 sol yearly to <address>"
+  // - "pay 0.1 sol to <address> yearly"
+  // - "send 0.1 sol to <address> every 6 months"
+  const amountTokenMatch = prompt.match(/(?:pay|send|transfer)\s+([0-9]*\.?[0-9]+)\s+([a-zA-Z]+)/i);
+  if (!amountTokenMatch || !amountTokenMatch[1] || !amountTokenMatch[2]) {
     return null;
   }
 
-  const frequencyValue = match[3] ?? (match[4] ? "every_6_months" : undefined);
+  const receiverMatch = prompt.match(/\bto\s+([1-9A-HJ-NP-Za-km-z]{32,44})\b/i);
+  if (!receiverMatch || !receiverMatch[1]) {
+    return null;
+  }
+
+  const sixMonthMatch = prompt.match(/(?:every|after)\s+6\s+months?/i);
+  const explicitFrequencyMatch = prompt.match(/\b(daily|weekly|monthly|quarterly|yearly|annually|annual|semiannual|semi-annual|semi annually|half yearly|half-yearly|biannual)\b/i);
+  const everyUnitMatch = prompt.match(/\bevery\s+(day|week|month|quarter|year)\b/i);
+
+  let frequencyValue: string | undefined;
+  if (sixMonthMatch) {
+    frequencyValue = "every_6_months";
+  } else if (explicitFrequencyMatch && explicitFrequencyMatch[1]) {
+    frequencyValue = explicitFrequencyMatch[1];
+  } else if (everyUnitMatch && everyUnitMatch[1]) {
+    const unit = everyUnitMatch[1].toLowerCase();
+    if (unit === "day") frequencyValue = "daily";
+    if (unit === "week") frequencyValue = "weekly";
+    if (unit === "month") frequencyValue = "monthly";
+    if (unit === "quarter") frequencyValue = "quarterly";
+    if (unit === "year") frequencyValue = "yearly";
+  }
+
   if (!frequencyValue) {
     return null;
   }
 
   const parsed = {
-    amount: Number(match[1]),
-    token: match[2],
+    amount: Number(amountTokenMatch[1]),
+    token: amountTokenMatch[2],
     frequency: normalizeFrequency(frequencyValue),
-    receiverAddress: match[5],
+    receiverAddress: receiverMatch[1],
   };
 
   const result = parsedTaskSchema.safeParse(parsed);

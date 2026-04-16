@@ -16,7 +16,7 @@ const createTaskManualSchema = z.object({
   amount: z.number().positive(),
   token: z.string().trim().min(1).transform((value) => value.toUpperCase()),
   receiverAddress: z.string().trim().min(32).max(44),
-  frequency: z.enum(["daily", "weekly"]),
+  frequency: z.enum(["daily", "weekly", "monthly", "quarterly", "yearly", "every_6_months"]),
   maxAmountLimit: z.number().positive(),
   expiryAt: z.string().datetime().optional(),
 });
@@ -46,7 +46,7 @@ export async function createTaskHandler(req: Request, res: Response) {
 
     if (!extracted) {
       return res.status(400).json({
-        error: "Could not parse payment instruction. Try: 'Pay 0.2 SOL daily to <address>'",
+        error: "Could not parse payment instruction. Try: 'Pay 0.2 SOL monthly to <address>' or 'Pay 0.2 SOL every 6 months to <address>'",
       });
     }
 

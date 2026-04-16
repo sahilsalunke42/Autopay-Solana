@@ -5,31 +5,56 @@ const parsedTaskSchema = z.object({
   amount: z.number().positive(),
   token: z.string().trim().min(1).transform((v) => v.toUpperCase()),
   receiverAddress: z.string().trim().min(32).max(44),
-  frequency: z.enum(["daily", "weekly"]),
+  frequency: z.enum(["daily", "weekly", "monthly", "quarterly", "yearly", "every_6_months"]),
 });
 
 export type ParsedTask = z.infer<typeof parsedTaskSchema>;
 
-function normalizeFrequency(value: string): "daily" | "weekly" {
+function normalizeFrequency(value: string): ParsedTask["frequency"] {
   const normalized = value.trim().toLowerCase();
-  if (normalized === "daily" || normalized === "weekly") {
+  if (normalized === "daily" || normalized === "weekly" || normalized === "monthly" || normalized === "quarterly" || normalized === "yearly" || normalized === "every_6_months") {
     return normalized;
   }
 
-  throw new Error("Unsupported frequency. Use daily or weekly.");
+  if (normalized === "annual" || normalized === "annually") {
+    return "yearly";
+  }
+
+  if (
+    normalized === "semiannual" ||
+    normalized === "semi-annual" ||
+    normalized === "semi annually" ||
+    normalized === "half yearly" ||
+    normalized === "half-yearly" ||
+    normalized === "biannual"
+  ) {
+    return "every_6_months";
+  }
+
+  const normalizedNoSpace = normalized.replace(/\s+/g, "_");
+  if (normalizedNoSpace === "every_6_months" || normalizedNoSpace === "after_6_months") {
+    return "every_6_months";
+  }
+
+  throw new Error("Unsupported frequency. Use daily, weekly, monthly, quarterly, yearly, or every 6 months.");
 }
 
 function tryRegexParser(prompt: string): ParsedTask | null {
-  // More flexible pattern: supports "pay", "send", "transfer", etc.
-  const match = prompt.match(/(pay|send|transfer)\s+([0-9]*\.?[0-9]+)\s+([a-zA-Z]+)\s+(daily|weekly)\s+to\s+([1-9A-HJ-NP-Za-km-z]{32,44})/i);
-  if (!match || !match[2] || !match[3] || !match[4] || !match[5]) {
+  // Flexible pattern with multiple recurrence styles.
+  const match = prompt.match(/(?:pay|send|transfer)\s+([0-9]*\.?[0-9]+)\s+([a-zA-Z]+)\s+(?:(daily|weekly|monthly|quarterly|yearly|annually)|(?:every|after)\s+(6)\s+months?)\s+to\s+([1-9A-HJ-NP-Za-km-z]{32,44})/i);
+  if (!match || !match[1] || !match[2] || !match[5]) {
+    return null;
+  }
+
+  const frequencyValue = match[3] ?? (match[4] ? "every_6_months" : undefined);
+  if (!frequencyValue) {
     return null;
   }
 
   const parsed = {
-    amount: Number(match[2]),
-    token: match[3],
-    frequency: normalizeFrequency(match[4]),
+    amount: Number(match[1]),
+    token: match[2],
+    frequency: normalizeFrequency(frequencyValue),
     receiverAddress: match[5],
   };
 
@@ -65,7 +90,7 @@ async function tryOpenAIParser(prompt: string): Promise<ParsedTask | null> {
         {
           role: "system",
           content:
-            "Extract autopay task details from text. Return strict JSON only with keys: amount(number), token(string), receiverAddress(string), frequency('daily'|'weekly').",
+            "Extract autopay task details from text. Return strict JSON only with keys: amount(number), token(string), receiverAddress(string), frequency('daily'|'weekly'|'monthly'|'quarterly'|'yearly'|'every_6_months').",
         },
         { role: "user", content: prompt },
       ],

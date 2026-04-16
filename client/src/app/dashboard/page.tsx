@@ -44,7 +44,7 @@ export default function DashboardPage() {
       return "Invalid payment instruction. Please change your prompt and try again.";
     }
     if (error.includes("parse")) {
-      return "This is a payments app, not a chatbot. Please use format: 'Pay 0.2 SOL daily to <address>'";
+      return "This is a payments app, not a chatbot. Use: daily, weekly, monthly, quarterly, yearly, or every 6 months.";
     }
     if (error.includes("unauthorized") || error.includes("authentication")) {
       return "Please authenticate first.";
@@ -240,7 +240,7 @@ export default function DashboardPage() {
                     rows={4}
                   />
                   <p className="mt-1.5 text-xs text-white/40">
-                    💡 Tip: Use any variation like "pay", "send", or "transfer". Example: "Send 0.2 SOL daily to DgLbR..."
+                    💡 Tip: Use "pay", "send", or "transfer". Frequencies: daily, weekly, monthly, quarterly, yearly, or every 6 months.
                   </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">

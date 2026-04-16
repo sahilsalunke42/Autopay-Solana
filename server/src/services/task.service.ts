@@ -7,11 +7,17 @@ const PAUSED_TASK_STATUS = "PAUSED" as never;
 const SUCCESS_TX_STATUS = "SUCCESS" as never;
 const FAILED_TX_STATUS = "FAILED" as never;
 
-function toFrequencyLabel(value: string): "daily" | "weekly" {
+type FrequencyLabel = "daily" | "weekly" | "monthly" | "quarterly" | "yearly" | "every_6_months";
+
+function toFrequencyLabel(value: string): FrequencyLabel {
   const normalized = value.toLowerCase();
   if (normalized === "daily") return "daily";
   if (normalized === "weekly") return "weekly";
-  throw new Error("Unsupported frequency. Use DAILY/WEEKLY or daily/weekly.");
+  if (normalized === "monthly") return "monthly";
+  if (normalized === "quarterly") return "quarterly";
+  if (normalized === "yearly") return "yearly";
+  if (normalized === "every_6_months") return "every_6_months";
+  throw new Error("Unsupported frequency. Use DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY/EVERY_6_MONTHS.");
 }
 
 function isTaskActive(status: string): boolean {
@@ -27,7 +33,27 @@ export function computeNextExecutionAt(frequency: string, from = new Date()): Da
     return next;
   }
 
-  next.setUTCDate(next.getUTCDate() + 7);
+  if (normalized === "weekly") {
+    next.setUTCDate(next.getUTCDate() + 7);
+    return next;
+  }
+
+  if (normalized === "monthly") {
+    next.setUTCMonth(next.getUTCMonth() + 1);
+    return next;
+  }
+
+  if (normalized === "quarterly") {
+    next.setUTCMonth(next.getUTCMonth() + 3);
+    return next;
+  }
+
+  if (normalized === "every_6_months") {
+    next.setUTCMonth(next.getUTCMonth() + 6);
+    return next;
+  }
+
+  next.setUTCFullYear(next.getUTCFullYear() + 1);
   return next;
 }
 

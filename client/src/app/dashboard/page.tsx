@@ -47,7 +47,21 @@ export default function DashboardPage() {
   const [expiryAt, setExpiryAt] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [status, setStatus] = useState("Loading...");
+
+  function formatErrorMessage(error: string): string {
+    // If it's a technical error, convert to user-friendly message
+    if (error.includes("status code") || error.includes("request failed") || error.includes("ERR_")) {
+      return "Invalid payment instruction. Please change your prompt and try again.";
+    }
+    if (error.includes("parse")) {
+      return "This is a payments app, not a chatbot. Please use format: 'Pay 0.2 SOL daily to <address>'";
+    }
+    if (error.includes("unauthorized") || error.includes("authentication")) {
+      return "Please authenticate first.";
+    }
+    // Return original error if it's already user-friendly
+    return error || "Something went wrong. Please try again.";
+  }
 
   useEffect(() => {
     const stored = localStorage.getItem("autopay-auth");
@@ -71,27 +85,23 @@ export default function DashboardPage() {
       const [taskRes, txRes] = await Promise.all([api.get("/api/task"), api.get("/api/transaction")]);
       setTasks(taskRes.data.tasks ?? []);
       setTransactions(txRes.data.transactions ?? []);
-      setStatus("Ready.");
     } catch {
-      setStatus("Connected, but could not load protected resources yet.");
+      // Silently fail on refresh
     }
   }
 
   async function handleLinkPrivateKey() {
     if (!privateKey.trim()) {
-      toast.error("Enter a private key to link wallet execution");
+      toast.error("Enter your private key");
       return;
     }
-    setStatus("Linking private key...");
     const result = await linkPrivateKey(privateKey);
     if (result.success) {
-      toast.success("Private key linked successfully");
-      setStatus("Private key linked successfully.");
+      toast.success("Private key linked successfully ✓");
       setPrivateKey("");
     } else {
-      const errorMsg = result.error || "Failed to link private key";
-      toast.error(errorMsg);
-      setStatus(errorMsg);
+      const friendlyError = formatErrorMessage(result.error || "");
+      toast.error(friendlyError);
     }
   }
 
@@ -100,7 +110,6 @@ export default function DashboardPage() {
       toast.error("Please enter a payment instruction");
       return;
     }
-    setStatus("Creating task...");
     const result = await createTask({
       prompt,
       maxAmountLimit: Number(maxAmountLimit),
@@ -108,57 +117,46 @@ export default function DashboardPage() {
     });
     if (result.success) {
       toast.success("Task created successfully! 🎉");
-      setStatus("Task created.");
       setPrompt("");
       setMaxAmountLimit("0.5");
       setExpiryAt("");
       await refreshData();
     } else {
-      const errorMsg = result.error || "Task creation failed";
-      toast.error(errorMsg);
-      setStatus(errorMsg);
+      const friendlyError = formatErrorMessage(result.error || "");
+      toast.error(friendlyError);
     }
   }
 
   async function handleExecuteTask(taskId: string) {
-    setStatus("Executing payment...");
     const result = await executeTask(taskId);
     if (result.success) {
-      toast.success("Payment executed successfully");
-      setStatus("Execution complete.");
+      toast.success("Payment executed successfully ✓");
       await refreshData();
     } else {
-      const errorMsg = result.error || "Execution failed";
-      toast.error(errorMsg);
-      setStatus(errorMsg);
+      const friendlyError = formatErrorMessage(result.error || "");
+      toast.error(friendlyError);
     }
   }
 
   async function handlePauseTask(taskId: string) {
-    setStatus("Pausing task...");
     const result = await pauseTask(taskId);
     if (result.success) {
-      toast.success("Task paused");
-      setStatus("Task paused.");
+      toast.success("Task paused ⏸");
       await refreshData();
     } else {
-      const errorMsg = result.error || "Failed to pause task";
-      toast.error(errorMsg);
-      setStatus(errorMsg);
+      const friendlyError = formatErrorMessage(result.error || "");
+      toast.error(friendlyError);
     }
   }
 
   async function handleResumeTask(taskId: string) {
-    setStatus("Resuming task...");
     const result = await resumeTask(taskId);
     if (result.success) {
-      toast.success("Task resumed");
-      setStatus("Task resumed.");
+      toast.success("Task resumed ▶");
       await refreshData();
     } else {
-      const errorMsg = result.error || "Failed to resume task";
-      toast.error(errorMsg);
-      setStatus(errorMsg);
+      const friendlyError = formatErrorMessage(result.error || "");
+      toast.error(friendlyError);
     }
   }
 
@@ -166,16 +164,13 @@ export default function DashboardPage() {
     if (!confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
       return;
     }
-    setStatus("Deleting task...");
     const result = await deleteTask(taskId);
     if (result.success) {
-      toast.success("Task deleted");
-      setStatus("Task deleted.");
+      toast.success("Task deleted ✓");
       await refreshData();
     } else {
-      const errorMsg = result.error || "Failed to delete task";
-      toast.error(errorMsg);
-      setStatus(errorMsg);
+      const friendlyError = formatErrorMessage(result.error || "");
+      toast.error(friendlyError);
     }
   }
 
@@ -230,7 +225,6 @@ export default function DashboardPage() {
                     Link Key
                   </Button>
                 </div>
-                <p className="mt-3 text-sm text-white/55">{status}</p>
               </div>
             </Card>
           </motion.div>

@@ -20,16 +20,17 @@ function normalizeFrequency(value: string): "daily" | "weekly" {
 }
 
 function tryRegexParser(prompt: string): ParsedTask | null {
-  const match = prompt.match(/pay\s+([0-9]*\.?[0-9]+)\s+([a-zA-Z]+)\s+(daily|weekly)\s+to\s+([1-9A-HJ-NP-Za-km-z]{32,44})/i);
-  if (!match || !match[1] || !match[2] || !match[3] || !match[4]) {
+  // More flexible pattern: supports "pay", "send", "transfer", etc.
+  const match = prompt.match(/(pay|send|transfer)\s+([0-9]*\.?[0-9]+)\s+([a-zA-Z]+)\s+(daily|weekly)\s+to\s+([1-9A-HJ-NP-Za-km-z]{32,44})/i);
+  if (!match || !match[2] || !match[3] || !match[4] || !match[5]) {
     return null;
   }
 
   const parsed = {
-    amount: Number(match[1]),
-    token: match[2],
-    frequency: normalizeFrequency(match[3]),
-    receiverAddress: match[4],
+    amount: Number(match[2]),
+    token: match[3],
+    frequency: normalizeFrequency(match[4]),
+    receiverAddress: match[5],
   };
 
   const result = parsedTaskSchema.safeParse(parsed);
@@ -93,7 +94,7 @@ async function tryOpenAIParser(prompt: string): Promise<ParsedTask | null> {
   return parsed.success ? parsed.data : null;
 }
 
-export async function parseNaturalLanguageTask(prompt: string): Promise<ParsedTask> {
+export async function parseNaturalLanguageTask(prompt: string): Promise<ParsedTask | null> {
   const fromAi = await tryOpenAIParser(prompt);
   if (fromAi) {
     return fromAi;
@@ -104,5 +105,5 @@ export async function parseNaturalLanguageTask(prompt: string): Promise<ParsedTa
     return fromRegex;
   }
 
-  throw new Error("Could not parse task input. Example: Pay 0.2 SOL weekly to <wallet>");
+  return null;
 }

@@ -44,6 +44,12 @@ export async function createTaskHandler(req: Request, res: Response) {
           frequency: parsed.data.frequency,
         };
 
+    if (!extracted) {
+      return res.status(400).json({
+        error: "Could not parse payment instruction. Try: 'Pay 0.2 SOL daily to <address>'",
+      });
+    }
+
     if (extracted.amount > parsed.data.maxAmountLimit) {
       return res.status(400).json({ error: "Task amount exceeds maxAmountLimit" });
     }

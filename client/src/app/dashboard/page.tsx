@@ -229,13 +229,18 @@ export default function DashboardPage() {
               </div>
               <h3 className="mt-4 font-sans text-3xl font-semibold">New autopay</h3>
               <div className="mt-6 space-y-4">
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g. 'Pay 0.2 SOL weekly to your_address'"
-                  className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-gold-300/50 focus:outline-none"
-                  rows={4}
-                />
+                <div>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="e.g. 'Pay 0.2 SOL weekly to your_address'"
+                    className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-gold-300/50 focus:outline-none"
+                    rows={4}
+                  />
+                  <p className="mt-2 text-xs text-white/40">
+                    💡 Tip: Use any variation like "pay", "send", or "transfer". Example: "Send 0.2 SOL daily to DgLbR..."
+                  </p>
+                </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <Input value={maxAmountLimit} onChange={(e) => setMaxAmountLimit(e.target.value)} placeholder="Max amount limit" />
                   <Input value={expiryAt} onChange={(e) => setExpiryAt(e.target.value)} placeholder="Expiry ISO date (optional)" />

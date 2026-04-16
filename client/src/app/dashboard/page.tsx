@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Wallet, Trash2, Pause, Play } from "lucide-react";
+import { toast } from "react-toastify";
 import { api, setAuthToken } from "@/lib/api";
 import { pauseTask, resumeTask, deleteTask, executeTask, linkPrivateKey, createTask } from "@/lib/task-api";
 import { Button } from "@/components/ui/button";
@@ -78,22 +79,25 @@ export default function DashboardPage() {
 
   async function handleLinkPrivateKey() {
     if (!privateKey.trim()) {
-      setStatus("Enter a private key to link wallet execution.");
+      toast.error("Enter a private key to link wallet execution");
       return;
     }
     setStatus("Linking private key...");
     const result = await linkPrivateKey(privateKey);
     if (result.success) {
+      toast.success("Private key linked successfully");
       setStatus("Private key linked successfully.");
       setPrivateKey("");
     } else {
-      setStatus(result.error || "Failed to link private key.");
+      const errorMsg = result.error || "Failed to link private key";
+      toast.error(errorMsg);
+      setStatus(errorMsg);
     }
   }
 
   async function handleCreateTask() {
     if (!prompt.trim()) {
-      setStatus("Enter a payment instruction.");
+      toast.error("Please enter a payment instruction");
       return;
     }
     setStatus("Creating task...");
@@ -103,13 +107,16 @@ export default function DashboardPage() {
       expiryAt: expiryAt || undefined,
     });
     if (result.success) {
+      toast.success("Task created successfully! 🎉");
       setStatus("Task created.");
       setPrompt("");
       setMaxAmountLimit("0.5");
       setExpiryAt("");
       await refreshData();
     } else {
-      setStatus(result.error || "Task creation failed.");
+      const errorMsg = result.error || "Task creation failed";
+      toast.error(errorMsg);
+      setStatus(errorMsg);
     }
   }
 
@@ -117,10 +124,13 @@ export default function DashboardPage() {
     setStatus("Executing payment...");
     const result = await executeTask(taskId);
     if (result.success) {
+      toast.success("Payment executed successfully");
       setStatus("Execution complete.");
       await refreshData();
     } else {
-      setStatus(result.error || "Execution failed.");
+      const errorMsg = result.error || "Execution failed";
+      toast.error(errorMsg);
+      setStatus(errorMsg);
     }
   }
 
@@ -128,10 +138,13 @@ export default function DashboardPage() {
     setStatus("Pausing task...");
     const result = await pauseTask(taskId);
     if (result.success) {
+      toast.success("Task paused");
       setStatus("Task paused.");
       await refreshData();
     } else {
-      setStatus(result.error || "Failed to pause task.");
+      const errorMsg = result.error || "Failed to pause task";
+      toast.error(errorMsg);
+      setStatus(errorMsg);
     }
   }
 
@@ -139,10 +152,13 @@ export default function DashboardPage() {
     setStatus("Resuming task...");
     const result = await resumeTask(taskId);
     if (result.success) {
+      toast.success("Task resumed");
       setStatus("Task resumed.");
       await refreshData();
     } else {
-      setStatus(result.error || "Failed to resume task.");
+      const errorMsg = result.error || "Failed to resume task";
+      toast.error(errorMsg);
+      setStatus(errorMsg);
     }
   }
 
@@ -153,10 +169,13 @@ export default function DashboardPage() {
     setStatus("Deleting task...");
     const result = await deleteTask(taskId);
     if (result.success) {
+      toast.success("Task deleted");
       setStatus("Task deleted.");
       await refreshData();
     } else {
-      setStatus(result.error || "Failed to delete task.");
+      const errorMsg = result.error || "Failed to delete task";
+      toast.error(errorMsg);
+      setStatus(errorMsg);
     }
   }
 

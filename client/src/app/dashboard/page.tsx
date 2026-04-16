@@ -41,10 +41,7 @@ export default function DashboardPage() {
   const [auth, setAuth] = useState<AuthState>(null);
   const [loading, setLoading] = useState(true);
   const [privateKey, setPrivateKey] = useState("");
-  const [amount, setAmount] = useState("0.2");
-  const [token, setToken] = useState("SOL");
-  const [receiverAddress, setReceiverAddress] = useState("");
-  const [frequency, setFrequency] = useState("weekly");
+  const [prompt, setPrompt] = useState("");
   const [maxAmountLimit, setMaxAmountLimit] = useState("0.5");
   const [expiryAt, setExpiryAt] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -95,21 +92,19 @@ export default function DashboardPage() {
   }
 
   async function handleCreateTask() {
+    if (!prompt.trim()) {
+      setStatus("Enter a payment instruction.");
+      return;
+    }
     setStatus("Creating task...");
     const result = await createTask({
-      amount: Number(amount),
-      token,
-      receiverAddress,
-      frequency,
+      prompt,
       maxAmountLimit: Number(maxAmountLimit),
       expiryAt: expiryAt || undefined,
     });
     if (result.success) {
       setStatus("Task created.");
-      setAmount("0.2");
-      setToken("SOL");
-      setReceiverAddress("");
-      setFrequency("weekly");
+      setPrompt("");
       setMaxAmountLimit("0.5");
       setExpiryAt("");
       await refreshData();
@@ -234,14 +229,13 @@ export default function DashboardPage() {
               </div>
               <h3 className="mt-4 font-sans text-3xl font-semibold">New autopay</h3>
               <div className="mt-6 space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount (e.g. 0.2)" />
-                  <Input value={token} onChange={(e) => setToken(e.target.value)} placeholder="Token (e.g. SOL)" />
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Input value={receiverAddress} onChange={(e) => setReceiverAddress(e.target.value)} placeholder="Receiver public key" />
-                  <Input value={frequency} onChange={(e) => setFrequency(e.target.value)} placeholder="Frequency: daily or weekly" />
-                </div>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="e.g. 'Pay 0.2 SOL weekly to your_address'"
+                  className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-gold-300/50 focus:outline-none"
+                  rows={4}
+                />
                 <div className="grid gap-4 md:grid-cols-2">
                   <Input value={maxAmountLimit} onChange={(e) => setMaxAmountLimit(e.target.value)} placeholder="Max amount limit" />
                   <Input value={expiryAt} onChange={(e) => setExpiryAt(e.target.value)} placeholder="Expiry ISO date (optional)" />

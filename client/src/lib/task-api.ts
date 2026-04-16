@@ -61,10 +61,7 @@ export async function linkPrivateKey(privateKey: string): Promise<{ success: boo
 }
 
 export async function createTask(taskData: {
-  amount: number;
-  token: string;
-  receiverAddress: string;
-  frequency: string;
+  prompt: string;
   maxAmountLimit: number;
   expiryAt?: string;
 }): Promise<{ success: boolean; error?: string }> {

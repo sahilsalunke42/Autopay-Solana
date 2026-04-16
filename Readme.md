@@ -158,7 +158,7 @@ Input:
 → Transaction executed
 → Result logged
 
-````
+```
 
 ---
 
@@ -197,7 +197,7 @@ Input:
 ### 1. Install dependencies
 ```bash
 bun install
-````
+```
 
 ### 2. Environment variables
 

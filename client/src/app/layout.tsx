@@ -19,7 +19,7 @@ const display = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: "AutoPay Solana",
-  description: "Wallet-authenticated Solana autopay demo built for the hackathon."
+  description: "Wallet-authenticated Solana autopay."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

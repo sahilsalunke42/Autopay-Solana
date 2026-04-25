@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Clock3, ReceiptText } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
@@ -16,7 +17,15 @@ const featureCards = [
 ];
 
 export default function LandingPage() {
+  const router = useRouter();
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  useEffect(() => {
+    const storedAuth = localStorage.getItem("autopay-auth");
+    if (storedAuth) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(231,195,91,0.12),_transparent_26%),linear-gradient(180deg,#0d0d10_0%,#050505_100%)] text-white">
@@ -65,7 +74,7 @@ export default function LandingPage() {
       </div>
 
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
-      </main>
+    </main>
   );
 }
 

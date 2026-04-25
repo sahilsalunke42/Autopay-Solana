@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { loginHandler, logOutHandler } from "../controllers/auth.controller";
-import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -27,6 +26,6 @@ router.post("/login", loginHandler);
 	#swagger.responses[200] = { description: 'Successfully logged out' }
 	#swagger.responses[401] = { description: 'Unauthorized' }
 */
-router.post("/logout", authMiddleware, logOutHandler);
+router.post("/logout", logOutHandler);
 
 export { router as authRouter };

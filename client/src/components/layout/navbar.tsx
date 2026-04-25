@@ -27,7 +27,7 @@ export function Navbar({ walletConnected, authenticated, onLoginClick }: NavbarP
   return (
     <nav className="sticky top-4 z-50 mb-6 rounded-2xl border border-white/10 bg-black/40 px-4 py-2.5 backdrop-blur-xl md:px-5 md:py-3">
       <div className="flex flex-wrap items-center gap-3 md:gap-5">
-        <a href="/" className="mr-2 inline-flex items-center gap-2">
+        <a href={authenticated ? "/dashboard" : "/"} className="mr-2 inline-flex items-center gap-2">
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gold-300 text-sm font-bold text-black">
             <img src={AutoSol.src} alt="AutoSol" className="h-full w-full" />
           </span>

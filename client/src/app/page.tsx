@@ -7,7 +7,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LoginModal } from "@/components/auth/login-modal";
+import { LoginModal } from "../components/auth/login-modal";
 
 const featureCards = [
   { icon: ShieldCheck, title: "Wallet-native auth", text: "Sign a message and the backend handles signup/login in one pass." },
@@ -64,7 +64,7 @@ export default function LandingPage() {
         <Footer />
       </div>
 
-        {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
       </main>
   );
 }

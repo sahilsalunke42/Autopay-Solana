@@ -23,7 +23,7 @@ export function Footer() {
 
         <div>
           <p className="text-sm uppercase tracking-[0.2em] text-white/60">Disclaimer</p>
-          <p className="mt-4 text-base leading-7 text-white/80 md:text-lg">Hackathon prototype. Do not use with real funds.</p>
+          <p className="mt-4 text-base leading-7 text-white/80 md:text-lg">Prototype. Do not use with real funds.</p>
         </div>
       </div>
 
